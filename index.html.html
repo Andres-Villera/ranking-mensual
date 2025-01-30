@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking de Ventas</title>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: url('wallstreet-bg.jpg') no-repeat center center/cover;
+            color: white;
+            text-align: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            height: 100vh;
+            padding: 20px;
+        }
+        .ranking-box {
+            width: 40%;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(255, 215, 0, 0.6);
+        }
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            font-weight: bold;
+            color: gold;
+            text-shadow: 4px 4px 10px rgba(255, 215, 0, 1);
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+        }
+        .ranking-list li {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        /* 🔥 PRIMER PUESTO */
+        .ranking-list li:first-child {
+            background: linear-gradient(90deg, gold, #ffec80);
+            color: black;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 15px;
+            text-shadow: 2px 2px 10px rgba(255, 215, 0, 1);
+            border: 3px solid gold;
+        }
+        /* 🥈 SEGUNDO PUESTO */
+        .ranking-list li:nth-child(2) {
+            background: linear-gradient(90deg, silver, #dcdcdc);
+            color: black;
+            font-size: 1.8rem;
+            font-weight: bold;
+            padding: 12px;
+            border: 3px solid silver;
+        }
+        .congrats {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: yellow;
+            color: black;
+            font-size: 2rem;
+            font-weight: bold;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+            z-index: 10;
+        }
+        /* 🎉 Billetes en toda la pantalla */
+        .money-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        .money {
+            position: absolute;
+            width: 50px;
+            animation: fall linear infinite;
+            opacity: 0.8;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+        }
+        /* 🌟 Frase motivacional */
+        .motivational-text {
+            position: absolute;
+            bottom: 30px;
+            right: 50px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: gold;
+            text-shadow: 4px 4px 15px rgba(255, 215, 0, 1);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px 30px;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ranking-box">
+            <h1>🏆 RANKING FTD 🏆</h1>
+            <ul id="rankingFTD" class="ranking-list"></ul>
+        </div>
+        <div class="ranking-box">
+            <h1>🏆 RANKING RETENCIÓN 🏆</h1>
+            <ul id="rankingRetencion" class="ranking-list"></ul>
+        </div>
+    </div>
+    <div id="congrats" class="congrats"></div>
+
+    <!-- 🌟 Frase motivacional -->
+    <div class="motivational-text">No hay límites para cumplir mis sueños</div>
+
+    <!-- 🎉 Contenedor de Billetes -->
+    <div class="money-container"></div>
+
+    <!-- 🎉 Billetes cayendo continuamente -->
+    <script>
+        function createMoneyEffect() {
+            const moneyContainer = document.querySelector(".money-container");
+            let money = document.createElement("img");
+            money.src = "money.png";
+            money.className = "money";
+            money.style.left = Math.random() * window.innerWidth + "px";
+            money.style.animationDuration = (Math.random() * 5 + 3) + "s";
+            moneyContainer.appendChild(money);
+            setTimeout(() => money.remove(), 7000);
+        }
+        setInterval(createMoneyEffect, 300);
+
+        /* 📡 Conexión con Google Sheets */
+        const sheetURL = "https://script.google.com/macros/s/AKfycbzJvQpwzm3usxfDh4UHIPSvhBVBtA1xyncwlCv4_Tw53kK1m2eQ-MCD6OUuSMViFDb1Rw/exec";
+
+        async function fetchRankings() {
+            try {
+                let response = await fetch(sheetURL);
+                let data = await response.json();
+                
+                updateRanking('rankingFTD', data.rankingFTD);
+                updateRanking('rankingRetencion', data.rankingRetencion.filter(entry => entry.sales > 0));
+            } catch (error) {
+                console.error("Error al obtener datos de Google Sheets:", error);
+            }
+        }
+
+        function updateRanking(elementId, rankingData) {
+            const rankingElement = document.getElementById(elementId);
+            rankingElement.innerHTML = "";
+            rankingData.sort((a, b) => b.sales - a.sales);
+
+            rankingData.forEach(entry => {
+                const li = document.createElement("li");
+                li.innerHTML = `<span>${entry.name}</span> <span>$ ${entry.sales.toLocaleString('es-CO')}</span>`;
+                rankingElement.appendChild(li);
+            });
+        }
+
+        function showCongrats(name, amount) {
+            const congratsElement = document.getElementById("congrats");
+            congratsElement.innerHTML = `¡Felicidades ${name}! Nuevo monto: $ ${amount.toLocaleString('es-CO')}`;
+            congratsElement.style.display = "block";
+            setTimeout(() => {
+                congratsElement.style.display = "none";
+            }, 5000);
+        }
+
+        let previousData = {};
+
+        async function checkForUpdates() {
+            try {
+                let response = await fetch(sheetURL);
+                let data = await response.json();
+                
+                data.rankingFTD.concat(data.rankingRetencion).forEach(entry => {
+                    if (previousData[entry.name] !== undefined && previousData[entry.name] !== entry.sales) {
+                        showCongrats(entry.name, entry.sales);
+                    }
+                    previousData[entry.name] = entry.sales;
+                });
+
+                updateRanking('rankingFTD', data.rankingFTD);
+                updateRanking('rankingRetencion', data.rankingRetencion.filter(entry => entry.sales > 0));
+            } catch (error) {
+                console.error("Error al verificar actualizaciones:", error);
+            }
+        }
+
+        fetchRankings();
+        setInterval(checkForUpdates, 5000);
+    </script>
+</body>
+</html>
