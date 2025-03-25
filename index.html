@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Ranking de Ventas</title>
   <style>
-    /* Estilos generales */
     body {
       font-family: 'Poppins', sans-serif;
       background: url('wallstreet-bg.jpg') no-repeat center center/cover;
@@ -16,31 +15,29 @@
       position: relative;
       min-height: 100vh;
     }
-    /* Contenedor principal para los rankings */
     .container {
       display: flex;
       justify-content: space-around;
+      flex-wrap: wrap;
       align-items: flex-start;
       padding: 20px;
-      margin-bottom: 120px; /* Espacio para el total en la parte inferior */
+      margin-bottom: 120px;
     }
     .ranking-box {
-      width: 35%;
+      width: 30%;
       background: rgba(0, 0, 0, 0.85);
       padding: 15px;
       border-radius: 15px;
       box-shadow: 0px 4px 15px rgba(255, 215, 0, 0.6);
+      margin-bottom: 20px;
     }
     h1 {
-      font-size: 2.5rem;
+      font-size: 2rem;
       text-transform: uppercase;
       font-weight: bold;
       color: gold;
       text-shadow: 4px 4px 10px rgba(255, 215, 0, 1);
       margin: 0 0 10px;
-    }
-    .ranking-title-small {
-      font-size: 2rem;
     }
     .ranking-list {
       list-style: none;
@@ -48,7 +45,7 @@
       margin: 0;
     }
     .ranking-list li {
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       font-weight: bold;
       margin: 8px 0;
       display: flex;
@@ -56,11 +53,10 @@
       padding: 8px;
       border-radius: 5px;
     }
-    /* Estilos para primer y segundo puesto */
     .ranking-list li:first-child {
       background: linear-gradient(90deg, gold, #ffec80);
       color: black;
-      font-size: 1.8rem;
+      font-size: 1.5rem;
       padding: 12px;
       text-shadow: 2px 2px 10px rgba(255, 215, 0, 1);
       border: 3px solid gold;
@@ -68,11 +64,10 @@
     .ranking-list li:nth-child(2) {
       background: linear-gradient(90deg, silver, #dcdcdc);
       color: black;
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       padding: 10px;
       border: 3px solid silver;
     }
-    /* Cuadro del total (fijo en la parte inferior) */
     .total-box {
       position: fixed;
       bottom: 0;
@@ -83,14 +78,12 @@
       font-size: 2.5rem;
       font-weight: bold;
       color: #fff;
-      border: 2px solid #ffcc00;
       border-radius: 10px 10px 0 0;
       box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
       width: 100%;
       max-width: 500px;
       text-align: center;
     }
-    /* Cuadro global de felicitaciones (centrado y en verde) */
     .felicitaciones-global {
       position: fixed;
       top: 50%;
@@ -106,7 +99,6 @@
       display: none;
       z-index: 1000;
     }
-    /* Efecto de caída de imágenes (dinero) */
     .money-container {
       position: fixed;
       top: 0;
@@ -131,29 +123,30 @@
 </head>
 <body>
   <div class="container">
-    <!-- Ranking FTD -->
     <div class="ranking-box">
-      <h1>🏆 RANKING FTD 🏆</h1>
+      <h1>🏆 TEAM 1 🏆</h1>
       <ul id="rankingFTD" class="ranking-list"></ul>
     </div>
-    <!-- Ranking RETENCIÓN -->
     <div class="ranking-box">
-      <h1 class="ranking-title-small">🏆 RANKING RETENCIÓN 🏆</h1>
+      <h1>🏆 TEAM 2 🏆</h1>
+      <ul id="rankingTeam2" class="ranking-list"></ul>
+    </div>
+    <div class="ranking-box">
+      <h1>🏆 RETENCIÓN 🏆</h1>
       <ul id="rankingRetencion" class="ranking-list"></ul>
     </div>
   </div>
-  <!-- Cuadro del total (fijo en la parte inferior) -->
+
   <div id="totalOficina" class="total-box">$ 0.00</div>
-  <!-- Cuadro global de felicitaciones (centrado) -->
   <div id="felicitacionesGlobal" class="felicitaciones-global"></div>
   <div class="money-container"></div>
 
   <script>
-    // Función para crear el efecto de caída de billetes (imagen "money.png")
+    // Efecto de billetes cayendo
     function createMoneyEffect() {
       const moneyContainer = document.querySelector(".money-container");
       let money = document.createElement("img");
-      money.src = "money.png"; // Asegúrate de que esta imagen esté en la ruta indicada
+      money.src = "money.png";
       money.className = "money";
       money.style.left = Math.random() * window.innerWidth + "px";
       money.style.animationDuration = (Math.random() * 5 + 3) + "s";
@@ -162,90 +155,76 @@
     }
     setInterval(createMoneyEffect, 300);
 
-    // URL del script de Google Sheets (ajusta esta URL según corresponda)
-    const sheetURL = "https://script.google.com/macros/s/AKfycbzJvQpwzm3usxfDh4UHIPSvhBVBtA1xyncwlCv4_Tw53kK1m2eQ-MCD6OUuSMViFDb1Rw/exec";
+    // ⚠️ Reemplaza esta URL por tu propia URL de Google Apps Script
+    const sheetURL = "https://script.google.com/macros/s/AKfycby13WwHrBl0vaTaPXktPShZr49wF-xG_157FpdLEWkdzhBeuJRvk6CFdpl8fH0eF0k11A/exec";
 
-    // Variable global para guardar las ventas anteriores por asesor (clave: nombre)
     let previousSales = {};
 
-    // Función para obtener datos y actualizar la página (se actualiza automáticamente cada 5 segundos)
     async function fetchRankings() {
       try {
-        let response = await fetch(sheetURL);
-        let data = await response.json();
-        console.log(data);
-        // Actualizar las listas de ranking
+        const response = await fetch(sheetURL);
+        const data = await response.json();
+
         updateRanking('rankingFTD', data.rankingFTD);
+        updateRanking('rankingTeam2', data.rankingTeam2);
         updateRanking('rankingRetencion', data.rankingRetencion.filter(entry => parseFloat(entry.sales) > 0));
-        // Actualizar el total general
-        updateTotal(data.rankingFTD, data.rankingRetencion);
-        // Verificar si algún asesor tuvo incremento y mostrar felicitación
-        checkForUpdate([...data.rankingFTD, ...data.rankingRetencion]);
+
+        updateTotal(data.rankingFTD, data.rankingTeam2, data.rankingRetencion);
+        checkForUpdate([...data.rankingFTD, ...data.rankingTeam2, ...data.rankingRetencion]);
+
       } catch (error) {
-        console.error("Error al obtener datos de Google Sheets:", error);
+        console.error("Error al obtener datos:", error);
       }
     }
 
-    // Actualiza la lista de un ranking (FTD o RETENCIÓN)
     function updateRanking(elementId, rankingData) {
       const rankingElement = document.getElementById(elementId);
       rankingElement.innerHTML = "";
-      // Ordenar de mayor a menor (convirtiendo a número)
-      rankingData.sort((a, b) => parseFloat(b.sales) - parseFloat(a.sales));
+      rankingData.sort((a, b) => b.sales - a.sales);
       rankingData.forEach(entry => {
         const li = document.createElement("li");
-        let salesValue = parseFloat(entry.sales) || 0;
-        li.innerHTML = `<span>${entry.name}</span> <span>$ ${salesValue.toLocaleString('es-CO', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</span>`;
+        li.innerHTML = `<span>${entry.name}</span><span>$ ${entry.sales.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
         rankingElement.appendChild(li);
       });
     }
 
-    // Actualiza el total general y lo muestra en la parte inferior
-    function updateTotal(ftdData, retencionData) {
-      let totalFTD = ftdData.reduce((sum, entry) => sum + (parseFloat(entry.sales) || 0), 0);
-      let totalRetencion = retencionData.reduce((sum, entry) => sum + (parseFloat(entry.sales) || 0), 0);
-      let total = totalFTD + totalRetencion;
-      // Truncar a 2 decimales sin redondear
-      let truncatedTotal = Math.floor(total * 100) / 100;
-      let formattedTotal = truncatedTotal.toFixed(2);
-      document.getElementById("totalOficina").innerHTML = "$ " + formattedTotal;
+    function updateTotal(team1, team2, retencion) {
+      const total = [...team1, ...team2, ...retencion].reduce((sum, e) => sum + (parseFloat(e.sales) || 0), 0);
+      const formatted = (Math.floor(total * 100) / 100).toFixed(2);
+      document.getElementById("totalOficina").innerText = "$ " + formatted;
     }
 
-    // Compara las ventas actuales con las anteriores para detectar incremento
     function checkForUpdate(data) {
       let updatedAdvisor = null;
       let maxIncrease = 0;
+
       data.forEach(entry => {
-        let newSales = parseFloat(entry.sales) || 0;
-        let oldSales = previousSales[entry.name] || 0;
-        let increase = newSales - oldSales;
-        if (increase > maxIncrease) {
-          maxIncrease = increase;
+        const current = parseFloat(entry.sales) || 0;
+        const previous = previousSales[entry.name] || 0;
+        const diff = current - previous;
+
+        if (diff > maxIncrease) {
+          maxIncrease = diff;
           updatedAdvisor = entry;
         }
+
+        previousSales[entry.name] = current;
       });
-      // Actualizar previousSales con los valores actuales
-      data.forEach(entry => {
-        previousSales[entry.name] = parseFloat(entry.sales) || 0;
-      });
-      // Si se detectó un incremento, mostrar el cuadro de felicitación
+
       if (updatedAdvisor && maxIncrease > 0) {
         showCongratulation(updatedAdvisor);
       }
     }
 
-    // Muestra el cuadro de felicitaciones (centrado y en verde) durante 3 segundos
     function showCongratulation(advisor) {
-      let salesValue = parseFloat(advisor.sales) || 0;
-      let message = `¡Felicitaciones ${advisor.name}! Has vendido $ ${salesValue.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      const felicitacionesGlobal = document.getElementById("felicitacionesGlobal");
-      felicitacionesGlobal.innerHTML = message;
-      felicitacionesGlobal.style.display = "block";
-      setTimeout(() => { felicitacionesGlobal.style.display = "none"; }, 3000);
+      const msg = `¡Felicitaciones ${advisor.name}! Has vendido $ ${parseFloat(advisor.sales).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      const box = document.getElementById("felicitacionesGlobal");
+      box.innerHTML = msg;
+      box.style.display = "block";
+      setTimeout(() => box.style.display = "none", 3000);
     }
 
-    // Actualizar automáticamente cada 5 segundos
-    setInterval(fetchRankings, 5000);
+    setInterval(fetchRankings, 5000); // Cada 5 segundos
   </script>
 </body>
 </html>
