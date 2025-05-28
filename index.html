@@ -73,16 +73,17 @@
       bottom: 0;
       left: 50%;
       transform: translateX(-50%);
-      background: linear-gradient(45deg, #ffcc00, #ff9900);
-      padding: 15px 20px;
-      font-size: 2.5rem;
+      background: linear-gradient(45deg, black, gold);
+      padding: 20px 30px;
+      font-size: 3rem;
       font-weight: bold;
-      color: #fff;
+      color: gold;
       border-radius: 10px 10px 0 0;
-      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.7);
       width: 100%;
-      max-width: 500px;
+      max-width: 600px;
       text-align: center;
+      letter-spacing: 1px;
     }
     .felicitaciones-global {
       position: fixed;
@@ -142,7 +143,6 @@
   <div class="money-container"></div>
 
   <script>
-    // Efecto de billetes cayendo
     function createMoneyEffect() {
       const moneyContainer = document.querySelector(".money-container");
       let money = document.createElement("img");
@@ -155,8 +155,7 @@
     }
     setInterval(createMoneyEffect, 300);
 
-    // ⚠️ Reemplaza esta URL por tu propia URL de Google Apps Script
-    const sheetURL = "https://script.google.com/macros/s/AKfycby13WwHrBl0vaTaPXktPShZr49wF-xG_157FpdLEWkdzhBeuJRvk6CFdpl8fH0eF0k11A/exec";
+    const sheetURL = "https://script.google.com/macros/s/AKfycbxCkuRReze2GkZnEBk-fe1GUjESAhYJMTuHZU0krscJBhWdERxzNpJyibfcI9E_8vDVXQ/exec";
 
     let previousSales = {};
 
@@ -190,7 +189,7 @@
 
     function updateTotal(team1, team2, retencion) {
       const total = [...team1, ...team2, ...retencion].reduce((sum, e) => sum + (parseFloat(e.sales) || 0), 0);
-      const formatted = (Math.floor(total * 100) / 100).toFixed(2);
+      const formatted = total.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("totalOficina").innerText = "$ " + formatted;
     }
 
@@ -224,7 +223,7 @@
       setTimeout(() => box.style.display = "none", 3000);
     }
 
-    setInterval(fetchRankings, 5000); // Cada 5 segundos
+    setInterval(fetchRankings, 5000);
   </script>
 </body>
 </html>
