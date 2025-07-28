@@ -68,22 +68,22 @@
       padding: 10px;
       border: 3px solid silver;
     }
-   .total-box {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 20px 30px;
-  font-size: 3rem;
-  font-weight: bold;
-  background: linear-gradient(90deg, #000000, #333333);
-  color: white;
-  border-radius: 50px;
-  box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.7);
-  width: auto;
-  max-width: 90%;
-  text-align: center;
-  letter-spacing: 1px;
+    .total-box {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 20px 30px;
+      font-size: 3rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #000000, #333333);
+      color: white;
+      border-radius: 50px;
+      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.7);
+      width: auto;
+      max-width: 90%;
+      text-align: center;
+      letter-spacing: 1px;
     }
     .felicitaciones-global {
       position: fixed;
@@ -180,11 +180,27 @@
       const rankingElement = document.getElementById(elementId);
       rankingElement.innerHTML = "";
       rankingData.sort((a, b) => b.sales - a.sales);
+      let totalEquipo = 0;
+
       rankingData.forEach(entry => {
+        const sales = parseFloat(entry.sales) || 0;
+        totalEquipo += sales;
+
         const li = document.createElement("li");
-        li.innerHTML = `<span>${entry.name}</span><span>$ ${entry.sales.toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>`;
+        li.innerHTML = `<span>${entry.name}</span><span>$ ${sales.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>`;
         rankingElement.appendChild(li);
       });
+
+      const totalLi = document.createElement("li");
+      totalLi.style.borderTop = "2px solid gold";
+      totalLi.style.marginTop = "10px";
+      totalLi.style.paddingTop = "10px";
+      totalLi.style.color = "white";
+      totalLi.style.background = "linear-gradient(90deg, #000000, #333333)";
+      totalLi.style.borderRadius = "10px";
+      totalLi.style.fontSize = "1.3rem";
+      totalLi.innerHTML = `<span><strong>TOTAL</strong></span><span><strong>$ ${totalEquipo.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></span>`;
+      rankingElement.appendChild(totalLi);
     }
 
     function updateTotal(team1, team2, retencion) {
