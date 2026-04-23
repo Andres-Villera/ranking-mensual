@@ -153,23 +153,53 @@
       moneyContainer.appendChild(money);
       setTimeout(() => money.remove(), 7000);
     }
+
     setInterval(createMoneyEffect, 300);
 
     const sheetURL = "https://script.google.com/macros/s/AKfycbxCkuRReze2GkZnEBk-fe1GUjESAhYJMTuHZU0krscJBhWdERxzNpJyibfcI9E_8vDVXQ/exec";
 
     let previousSales = {};
 
+    function cleanNumber(value) {
+      if (value === null || value === undefined) return 0;
+
+      let str = value.toString().trim();
+
+      str = str.replace(/\$/g, "").replace(/\s/g, "");
+
+      if (str.includes(",") && str.includes(".")) {
+        if (str.lastIndexOf(",") > str.lastIndexOf(".")) {
+          str = str.replace(/\./g, "").replace(",", ".");
+        } else {
+          str = str.replace(/,/g, "");
+        }
+      } else if (str.includes(",")) {
+        str = str.replace(",", ".");
+      }
+
+      return parseFloat(str) || 0;
+    }
+
     async function fetchRankings() {
       try {
-        const response = await fetch(SheetURL);
+        const response = await fetch(sheetURL + "?t=" + new Date().getTime());
         const data = await response.json();
 
-        updateRanking('rankingFTD', data.rankingFTD);
-        updateRanking('rankingTeam2', data.rankingTeam2);
-        updateRanking('rankingRetencion', data.rankingRetencion.filter(entry => parseFloat(entry.sales) > 0));
+        updateRanking("rankingFTD", data.rankingFTD || []);
+        updateRanking("rankingTeam2", data.rankingTeam2 || []);
+        updateRanking("rankingRetencion", data.rankingRetencion || []);
 
-        updateTotal(data.rankingFTD, data.rankingTeam2, data.rankingRetencion);
-        checkForUpdate([...data.rankingFTD, ...data.rankingTeam2, ...data.rankingRetencion]);
+        updateTotal(
+          data.rankingFTD || [],
+          data.rankingTeam2 || [],
+          data.rankingRetencion || []
+        );
+
+        checkForUpdate([
+          ...(data.rankingFTD || []),
+          ...(data.rankingTeam2 || []),
+          ...(data.rankingRetencion || [])
+        ]);
 
       } catch (error) {
         console.error("Error al obtener datos:", error);
@@ -179,11 +209,13 @@
     function updateRanking(elementId, rankingData) {
       const rankingElement = document.getElementById(elementId);
       rankingElement.innerHTML = "";
-      rankingData.sort((a, b) => b.sales - a.sales);
+
+      rankingData.sort((a, b) => cleanNumber(b.sales) - cleanNumber(a.sales));
+
       let totalEquipo = 0;
 
       rankingData.forEach(entry => {
-        const sales = parseFloat(entry.sales) || 0;
+        const sales = cleanNumber(entry.sales);
         totalEquipo += sales;
 
         const li = document.createElement("li");
@@ -204,8 +236,15 @@
     }
 
     function updateTotal(team1, team2, retencion) {
-      const total = [...team1, ...team2, ...retencion].reduce((sum, e) => sum + (parseFloat(e.sales) || 0), 0);
-      const formatted = total.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const total = [...team1, ...team2, ...retencion].reduce((sum, e) => {
+        return sum + cleanNumber(e.sales);
+      }, 0);
+
+      const formatted = total.toLocaleString('es-CO', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+
       document.getElementById("totalOficina").innerText = "$ " + formatted;
     }
 
@@ -214,7 +253,7 @@
       let maxIncrease = 0;
 
       data.forEach(entry => {
-        const current = parseFloat(entry.sales) || 0;
+        const current = cleanNumber(entry.sales);
         const previous = previousSales[entry.name] || 0;
         const diff = current - previous;
 
@@ -232,13 +271,15 @@
     }
 
     function showCongratulation(advisor) {
-      const msg = `¡Felicitaciones ${advisor.name}! Has vendido $ ${parseFloat(advisor.sales).toLocaleString('es-CO', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+      const sales = cleanNumber(advisor.sales);
+      const msg = `¡Felicitaciones ${advisor.name}! Has vendido $ ${sales.toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       const box = document.getElementById("felicitacionesGlobal");
       box.innerHTML = msg;
       box.style.display = "block";
       setTimeout(() => box.style.display = "none", 3000);
     }
 
+    fetchRankings();
     setInterval(fetchRankings, 5000);
   </script>
 </body>
